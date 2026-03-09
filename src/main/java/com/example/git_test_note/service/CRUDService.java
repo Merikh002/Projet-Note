@@ -2,12 +2,14 @@ package com.example.git_test_note.service;
 
 import java.util.List;
 
+import org.springframework.stereotype.Service;
+
 import com.example.git_test_note.model.Etudiant;
 import com.example.git_test_note.model.Professeur;
 import com.example.git_test_note.repository.EtudiantRepository;
 import com.example.git_test_note.repository.ProfesseurRepository;
 
-
+@Service
 public class CRUDService {
 
    
