@@ -26,7 +26,6 @@ public class Note {
     @ManyToOne
     private Matiere matiere;
 
-    private Double value;
+    private Double valeur;
 
-    private LocalDateTime dateHeure;
 }

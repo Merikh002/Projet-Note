@@ -13,6 +13,6 @@ public class Comparateur {
     @Id @GeneratedValue
     private Long id;
     
-    private String symbol; // "<" ou ">"
+    private String stringValeur; // "<" ou ">"
     private String ref;    // "under" ou "above"
 }
