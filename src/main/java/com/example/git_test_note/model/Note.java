@@ -26,6 +26,6 @@ public class Note {
     @ManyToOne
     private Matiere matiere;
 
-    private Double veleur;
+    private Double valeur;
 
 }
