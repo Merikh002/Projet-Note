@@ -13,9 +13,7 @@ public class Resolution {
     @Id @GeneratedValue
     private Long id;
     
-    private Double min;
-
-    private Double max;
+    private String stringValeur; // "Min" ou "Max" ou "Moyenne"
+    private String ref;    // "Minimal" ou "Maximum" ou "Average"
     
-    private Double avg;
 }
