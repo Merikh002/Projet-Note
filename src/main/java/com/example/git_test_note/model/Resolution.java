@@ -13,7 +13,6 @@ public class Resolution {
     @Id @GeneratedValue
     private Long id;
     
-    private String stringValeur; // "Min" ou "Max" ou "Moyenne"
-    private String ref;    // "Minimal" ou "Maximum" ou "Average"
+    private String libelle;    // "Minimal" ou "Maximum" ou "Average"
     
 }

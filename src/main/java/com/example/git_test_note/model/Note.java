@@ -1,9 +1,10 @@
 package com.example.git_test_note.model;
 
-import java.time.LocalDateTime;
-
-
-import jakarta.persistence.*;
+import jakarta.persistence.Entity;
+import jakarta.persistence.Id;
+import jakarta.persistence.IdClass;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.JoinColumn;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -12,20 +13,21 @@ import lombok.NoArgsConstructor;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
+@IdClass(NoteId.class)
 public class Note {
-    @Id @GeneratedValue
-    private Long id;
-    
-
+    @Id
     @ManyToOne
     private Etudiant etudiant;
 
+    @Id
     @ManyToOne
-    private Professeur professeur;
+    @JoinColumn(name = "correcteur_id")
+    private Correcteur correcteur;
 
+    @Id
     @ManyToOne
+    @JoinColumn(name = "matiere_id")
     private Matiere matiere;
 
     private Double valeur;
-
 }

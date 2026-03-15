@@ -17,10 +17,10 @@ public class Parametre {
     private Matiere matiere;
  
     @ManyToOne
-    private Comparateur comparateur;
+    private Operation operation;
 
     @ManyToOne
     private Resolution resolution;
 
-    private Double seuil; // selon le comparator
+    private Double seuil; 
 }

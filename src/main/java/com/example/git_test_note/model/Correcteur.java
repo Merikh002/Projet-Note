@@ -9,7 +9,7 @@ import lombok.NoArgsConstructor;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class Professeur {
+public class Correcteur {
     @Id @GeneratedValue
     private Long id;
     private String nom;
