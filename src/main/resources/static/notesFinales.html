@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>Notes finales</title>
+    <style>
+        table { border-collapse: collapse; width: 80%; margin: 20px auto; }
+        th, td { border: 1px solid #ccc; padding: 8px; text-align: left; }
+        th { background-color: #eee; }
+    </style>
+</head>
+<body>
+<h1 style="text-align:center;">Notes finales après délibération</h1>
+<button id="compute">Délibérer et rafraîchir</button>
+<table id="notes-table">
+    <thead>
+    <tr><th>Étudiant</th><th>Matière</th><th>Valeur</th></tr>
+    </thead>
+    <tbody>
+    <!-- rangées insérées par JS -->
+    </tbody>
+</table>
+
+<script>
+async function loadNotes() {
+    try {
+        const resp = await fetch('/api/notes-finales');
+        if (!resp.ok) {
+            console.error('loadNotes failed', resp.status);
+            return;
+        }
+        const notes = await resp.json();
+        console.log('loaded notes', notes);
+        const tbody = document.querySelector('#notes-table tbody');
+        tbody.innerHTML = '';
+        notes.forEach(n => {
+            const tr = document.createElement('tr');
+            tr.innerHTML = `<td>${n.etudiant?.nom || ''}</td>` +
+                           `<td>${n.matiere?.nom || ''}</td>` +
+                           `<td>${n.valeur}</td>`;
+            tbody.appendChild(tr);
+        });
+    } catch (e) {
+        console.error('error loading notes', e);
+    }
+}
+
+async function computeAndReload() {
+    try {
+        const resp = await fetch('/api/notes-finales/compute');
+        console.log('compute response', resp.status, await resp.text());
+    } catch (e) {
+        console.error('compute failed', e);
+    }
+    await loadNotes();
+}
+
+document.getElementById('compute').addEventListener('click', computeAndReload);
+window.addEventListener('load', loadNotes);
+</script>
+</body>
+</html>

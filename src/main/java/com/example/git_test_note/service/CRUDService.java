@@ -5,15 +5,15 @@ import java.util.List;
 import org.springframework.stereotype.Service;
 
 import com.example.git_test_note.model.Etudiant;
-import com.example.git_test_note.model.Professeur;
+import com.example.git_test_note.model.Correcteur;
 import com.example.git_test_note.repository.EtudiantRepository;
-import com.example.git_test_note.repository.ProfesseurRepository;
+import com.example.git_test_note.repository.CorrecteurRepository;
 import com.example.git_test_note.model.Matiere;
 import com.example.git_test_note.repository.MatiereRepository;
 import com.example.git_test_note.model.Resolution;
 import com.example.git_test_note.repository.ResolutionRepository;
-import com.example.git_test_note.model.Comparateur;
-import com.example.git_test_note.repository.ComparateurRepository;
+import com.example.git_test_note.model.Operation;
+import com.example.git_test_note.repository.OperationRepository;
 import com.example.git_test_note.model.Note;
 import com.example.git_test_note.repository.NoteRepository;
 import com.example.git_test_note.model.NoteFinal;
@@ -43,19 +43,19 @@ public class CRUDService {
         return etudiantRepository.findById(id).orElse(null);
     }
 
-    //Professeur
-    private final ProfesseurRepository professeurRepository;
+    //Correcteur
+    private final CorrecteurRepository correcteurRepository;
 
-    public void createProfesseur(Professeur professeur) {
-        professeurRepository.save(professeur);
+    public void createCorrecteur(Correcteur correcteur) {
+        correcteurRepository.save(correcteur);
     }
 
-    public List<Professeur> getAllProfesseurs() {
-        return professeurRepository.findAll();
+    public List<Correcteur> getAllCorrecteurs() {
+        return correcteurRepository.findAll();
     }
 
-    public Professeur findByIdProfesseur(Long id) {
-        return professeurRepository.findById(id).orElse(null);
+    public Correcteur findByIdCorrecteur(Long id) {
+        return correcteurRepository.findById(id).orElse(null);
     }
 
     //Matiere
@@ -89,18 +89,18 @@ public class CRUDService {
     }
 
     //Comparateur
-    private final ComparateurRepository comparateurRepository;
+    private final OperationRepository operationRepository;
 
-    public void createComparateur(Comparateur comparateur) {
-        comparateurRepository.save(comparateur);
+    public void createComparateur(Operation comparateur) {
+        operationRepository.save(comparateur);
     }
 
-    public List<Comparateur> getAllComparateurs() {
-        return comparateurRepository.findAll();
+    public List<Operation> getAllComparateurs() {
+        return operationRepository.findAll();
     }
 
-    public Comparateur findByIdComparateur(Long id) {
-        return comparateurRepository.findById(id).orElse(null);
+    public Operation findByIdComparateur(Long id) {
+        return operationRepository.findById(id).orElse(null);
     }
 
     //Note
@@ -153,18 +153,18 @@ public class CRUDService {
 
 
     public CRUDService(EtudiantRepository etudiantRepository,
-                       ProfesseurRepository professeurRepository,
+                       CorrecteurRepository correcteurRepository,
                        MatiereRepository matiereRepository,
                        ResolutionRepository resolutionRepository,
-                       ComparateurRepository comparateurRepository,
+                       OperationRepository operationRepository,
                        NoteRepository noteRepository,
                        NoteFinalRepository noteFinalRepository,
                        ParametreRepository parametreRepository) {
         this.etudiantRepository = etudiantRepository;
-        this.professeurRepository = professeurRepository;
+        this.correcteurRepository = correcteurRepository;
         this.matiereRepository = matiereRepository;
         this.resolutionRepository = resolutionRepository;
-        this.comparateurRepository = comparateurRepository;
+        this.operationRepository = operationRepository;
         this.noteRepository = noteRepository;
         this.noteFinalRepository = noteFinalRepository;
         this.parametreRepository = parametreRepository;

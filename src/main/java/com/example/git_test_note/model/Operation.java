@@ -9,10 +9,9 @@ import lombok.NoArgsConstructor;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class Comparateur {
+public class Operation {
     @Id @GeneratedValue
     private Long id;
     
-    private String stringValeur; // "<" ou ">"
-    private String ref;    // "under" ou "above"
+    private String signe; // "<" ou ">"
 }
