@@ -126,25 +126,30 @@ public class NoteService {
             return defaultResolution();
         }
 
+        List<Parametre> matching = new ArrayList<>();
         for (Parametre p : params) {
             if (p == null || p.getOperation() == null || p.getSeuil() == null) {
                 continue;
             }
             if (matches(p.getOperation().getSigne(), sad, p.getSeuil())) {
-                return p.getResolution();
+                matching.add(p);
             }
         }
 
-        Parametre closest = params.stream()
-                .filter(p -> p != null && p.getSeuil() != null)
-                .min(Comparator.comparingDouble(p -> Math.abs(sad - p.getSeuil())))
-                .orElse(null);
+        Comparator<Parametre> byProximityThenSeuil = Comparator
+                .comparingDouble((Parametre p) -> Math.abs(sad - p.getSeuil()))
+                .thenComparingDouble(Parametre::getSeuil);
 
-        if (closest != null) {
-            return closest.getResolution();
+        if (!matching.isEmpty()) {
+            return matching.stream().min(byProximityThenSeuil).get().getResolution();
         }
 
-        return defaultResolution();
+        // if no rule matches, fallback to nearest seuil (tie => lower seuil)
+        return params.stream()
+                .filter(p -> p != null && p.getSeuil() != null)
+                .min(byProximityThenSeuil)
+                .map(Parametre::getResolution)
+                .orElse(defaultResolution());
     }
 
     private boolean matches(String signe, double value, double seuil) {
