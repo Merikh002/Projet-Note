@@ -1,0 +1,89 @@
+/* Reset simple */
+*{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+    font-family: Arial, Helvetica, sans-serif;
+}
+
+/* Body */
+body{
+    background:#f4f6f8;
+    padding:40px;
+}
+
+/* Titre */
+h1{
+    text-align:center;
+    margin-bottom:30px;
+    color:#333;
+}
+
+/* Formulaire */
+form{
+    width:80%;
+    margin:0 auto 25px auto;
+    display:flex;
+    gap:10px;
+    flex-wrap:wrap;
+    justify-content:center;
+}
+
+/* Inputs */
+input, select{
+    padding:8px 10px;
+    border:1px solid #ccc;
+    border-radius:5px;
+    min-width:150px;
+}
+
+/* Boutons */
+button{
+    padding:8px 14px;
+    border:none;
+    border-radius:5px;
+    background:#4CAF50;
+    color:white;
+    cursor:pointer;
+    transition:0.2s;
+}
+
+button:hover{
+    background:#45a049;
+}
+
+/* Table */
+table{
+    border-collapse:collapse;
+    width:80%;
+    margin:auto;
+    background:white;
+    box-shadow:0 2px 8px rgba(0,0,0,0.1);
+}
+
+/* Header */
+th{
+    background:#2c3e50;
+    color:white;
+    padding:10px;
+}
+
+/* Cells */
+td{
+    padding:10px;
+    border-bottom:1px solid #ddd;
+}
+
+/* Hover ligne */
+tr:hover{
+    background:#f5f5f5;
+}
+
+/* Bouton supprimer */
+.btn-supprimer{
+    background:#e74c3c;
+}
+
+.btn-supprimer:hover{
+    background:#c0392b;
+}
