@@ -8,8 +8,19 @@
         th, td { border: 1px solid #ccc; padding: 8px; text-align: left; }
         th { background-color: #eee; }
     </style>
+    <link rel="stylesheet" href="style.css">
 </head>
 <body>
+
+    <div class="nav">
+                <a href="note-final.html">note final</a>
+                <a href="etudiant.html">Candidats</a>
+                <a href="correcteur.html">Correcteurs</a>
+                <a href="matiere.html">Matières</a>
+                <a href="note.html">Notes</a>
+                <a href="parametre.html">Paramètres</a>
+                <a href="resolution.html">Resolution</a>
+    </div>
 <h1 style="text-align:center;">Liste des notes</h1>
 
 
@@ -85,19 +96,20 @@ async function loadNotes() {
             tr.querySelector('.btn-supprimer').addEventListener('click', () => deleteresolution(e.id));
         });
 
-        document.getElementById('form-ajout').addEventListener('submit', e => {
+        
+    } catch (e) {
+        console.error('error loading note', e);
+    }
+}
+
+    document.getElementById('form-ajout').addEventListener('submit', e => {
         e.preventDefault();
         const etudiantId = document.getElementById('etudiant-select').value;
         const correcteurId = document.getElementById('correcteur-select').value;
         const matiereId = document.getElementById('matiere-select').value;
         const valeur = document.getElementById('valeur').value;
-
-           addnote(matiereId, etudiantId, correcteurId, valeur);
-        });
-    } catch (e) {
-        console.error('error loading note', e);
-    }
-}
+       addnote(matiereId, etudiantId, correcteurId, valeur);
+    });
 
 async function addnote(matiereId, etudiantId, correcteurId, valeur) {
     try {
@@ -124,7 +136,7 @@ async function addnote(matiereId, etudiantId, correcteurId, valeur) {
 async function deleteresolution(id) {
     if (!confirm('Confirmer la suppression ?')) return;
     try {
-        const resp = await fetch(`/api/resolutions/${id}`, { method: 'DELETE' });
+        const resp = await fetch(`/api/notes/${id}`, { method: 'DELETE' });
         if (resp.ok) {
             alert('note supprimé');
             loadNotes();
