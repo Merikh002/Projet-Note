@@ -1,8 +1,9 @@
 package com.example.git_test_note.model;
 
 import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
-import jakarta.persistence.IdClass;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.JoinColumn;
 import lombok.AllArgsConstructor;
@@ -13,18 +14,19 @@ import lombok.NoArgsConstructor;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-@IdClass(NoteId.class)
 public class Note {
-    @Id
+    @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+
+    
     @ManyToOne
+    @JoinColumn(name = "etudiant_id")
     private Etudiant etudiant;
 
-    @Id
     @ManyToOne
     @JoinColumn(name = "correcteur_id")
     private Correcteur correcteur;
 
-    @Id
     @ManyToOne
     @JoinColumn(name = "matiere_id")
     private Matiere matiere;

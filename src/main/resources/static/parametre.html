@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>Liste des élèves</title>
+    <style>
+        table { border-collapse: collapse; width: 80%; margin: 20px auto; }
+        th, td { border: 1px solid #ccc; padding: 8px; text-align: left; }
+        th { background-color: #eee; }
+    </style>
+</head>
+<body>
+<h1 style="text-align:center;">Liste des parametre</h1>
+
+
+<form id="form-ajout">
+    
+    <select id="matiere-select" required></select>
+
+    <select id="operation-select" required></select>
+
+    <select id="resolution-select" required></select>
+
+    <input type="number" id="seuil" placeholder="seuil" required>
+
+    <button type="submit">Ajouter</button>
+
+</form>
+
+<table id="parametre-table">
+    <thead>
+    <tr><th>id</th><th>matiere</th><th>operation</th><th>resolution</th><th>seuil</th></tr>
+    </thead>
+    <tbody>
+    <!-- rangées insérées par JS -->
+    </tbody>
+</table>
+
+<script>
+async function loadNotes() {
+    try {
+        const resp = await fetch('/api/parametres');
+        const matieres = await fetch('/api/matieres').then(r => r.json());
+        const operations = await fetch('/api/operations').then(r => r.json());
+        const resolutions = await fetch('/api/resolutions').then(r => r.json());
+
+        const matiereSelect = document.getElementById("matiere-select");
+        const operationSelect = document.getElementById("operation-select");
+        const resolutionSelect = document.getElementById("resolution-select");
+        
+
+        matieres.forEach(m => {
+            matiereSelect.innerHTML += `<option value="${m.id}">${m.nom}</option>`;
+        });
+
+        operations.forEach(o => {
+            operationSelect.innerHTML += `<option value="${o.id}">${o.signe}</option>`;
+        });
+
+        resolutions.forEach(r => {
+            resolutionSelect.innerHTML += `<option value="${r.id}">${r.libelle}</option>`;
+        });
+
+        if (!resp.ok) {
+            console.error('loadNotes failed', resp.status);
+            return;
+        }
+        const parametre = await resp.json();
+        console.log('loaded parametre', parametre);
+        const tbody = document.querySelector('#parametre-table tbody');
+        tbody.innerHTML = '';
+        parametre.forEach(e => {
+            const tr = document.createElement('tr');
+            tr.innerHTML = `<td>${e.id}</td>` +
+                           `<td>${e.matiere.nom}</td>` +
+                           `<td>${e.operation.signe}</td>` +
+                           `<td>${e.resolution.libelle}</td>` +
+                           `<td>${e.seuil}</td>` +
+                           '<td><button data-id="${e.id}" class="btn-supprimer">Supprimer</button></td>';
+            tbody.appendChild(tr);
+
+            tr.querySelector('.btn-supprimer').addEventListener('click', () => deleteresolution(e.id));
+        });
+
+        document.getElementById('form-ajout').addEventListener('submit', e => {
+        e.preventDefault();
+            const matiereId = document.getElementById('matiere-select').value;
+            const operationId = document.getElementById('operation-select').value;
+            const resolutionId = document.getElementById('resolution-select').value;
+            const seuil = document.getElementById('seuil').value;
+
+           addparametre(matiereId, operationId, resolutionId, seuil);
+        });
+    } catch (e) {
+        console.error('error loading parametre', e);
+    }
+}
+
+async function addparametre(matiereId, operationId, resolutionId, seuil) {
+    try {
+        const resp = await fetch('/api/parametres', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({  matiere: { id: matiereId },
+                                    operation: { id: operationId },
+                                    resolution: { id: resolutionId },
+                                    seuil: seuil })
+        });
+        if (resp.ok) {
+            alert('parametre ajouté');
+            loadNotes();
+        } else {
+            alert('Erreur lors de l\'ajout');
+        }
+    } catch (e) {
+        console.error('error adding parametre', e);
+        alert('Erreur lors de l\'ajout');
+    }
+}
+
+async function deleteresolution(id) {
+    if (!confirm('Confirmer la suppression ?')) return;
+    try {
+        const resp = await fetch(`/api/resolutions/${id}`, { method: 'DELETE' });
+        if (resp.ok) {
+            alert('parametre supprimé');
+            loadNotes();
+        } else {
+            alert('Erreur lors de la suppression');
+        }
+    } catch (e) {
+        console.error('error deleting parametre', e);
+        alert('Erreur lors de la suppression');
+    }
+}
+
+loadNotes();
+
+</script>
+</body>
+</html>

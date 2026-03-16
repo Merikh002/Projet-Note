@@ -10,14 +10,14 @@ import lombok.NoArgsConstructor;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-@IdClass(NoteFinalId.class)
 public class NoteFinal {
-    @Id
+    @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+
     @ManyToOne
     @JoinColumn(name = "etudiant_id")
     private Etudiant etudiant;
-
-    @Id
+    
     @ManyToOne
     @JoinColumn(name = "matiere_id")
     private Matiere matiere;

@@ -43,6 +43,14 @@ public class CRUDService {
         return etudiantRepository.findById(id).orElse(null);
     }
 
+    public boolean deleteEtudiant(Long id) {
+        if (etudiantRepository.existsById(id)) {
+            etudiantRepository.deleteById(id);
+            return true;
+        }
+        return false;
+    }
+
     //Correcteur
     private final CorrecteurRepository correcteurRepository;
 
@@ -56,6 +64,14 @@ public class CRUDService {
 
     public Correcteur findByIdCorrecteur(Long id) {
         return correcteurRepository.findById(id).orElse(null);
+    }
+
+    public boolean deleteCorrecteur(Long id) {
+        if (correcteurRepository.existsById(id)) {
+            correcteurRepository.deleteById(id);
+            return true;
+        }
+        return false;
     }
 
     //Matiere
@@ -73,6 +89,14 @@ public class CRUDService {
         return matiereRepository.findById(id).orElse(null);
     }
 
+    public boolean deleteMatiere(Long id) {
+        if (matiereRepository.existsById(id)) {
+            matiereRepository.deleteById(id);
+            return true;
+        }
+        return false;
+    }
+
     //Resolution
     private final ResolutionRepository resolutionRepository;
 
@@ -88,19 +112,35 @@ public class CRUDService {
         return resolutionRepository.findById(id).orElse(null);
     }
 
-    //Comparateur
-    private final OperationRepository operationRepository;
-
-    public void createComparateur(Operation comparateur) {
-        operationRepository.save(comparateur);
+    public boolean deleteResolution(Long id) {
+        if (resolutionRepository.existsById(id)) {
+            resolutionRepository.deleteById(id);
+            return true;
+        }
+        return false;
     }
 
-    public List<Operation> getAllComparateurs() {
+    //Operation
+    private final OperationRepository operationRepository;
+
+    public void createOperation(Operation operation) {
+        operationRepository.save(operation);
+    }
+
+    public List<Operation> getAllOperations() {
         return operationRepository.findAll();
     }
 
-    public Operation findByIdComparateur(Long id) {
+    public Operation findByIdOperation(Long id) {
         return operationRepository.findById(id).orElse(null);
+    }
+
+    public boolean deleteOperation(Long id) {
+        if (operationRepository.existsById(id)) {
+            operationRepository.deleteById(id);
+            return true;
+        }
+        return false;
     }
 
     //Note
@@ -116,6 +156,14 @@ public class CRUDService {
 
     public Note findByIdNote(Long id) {
         return noteRepository.findById(id).orElse(null);
+    }
+
+    public boolean deleteNote(Long id) {
+        if (noteRepository.existsById(id)) {
+            noteRepository.deleteById(id);
+            return true;
+        }
+        return false;
     }
 
     //NoteFinal
@@ -148,6 +196,14 @@ public class CRUDService {
 
     public Parametre findByIdParametre(Long id) {
         return parametreRepository.findById(id).orElse(null);
+    }
+
+    public boolean deleteParametre(Long id) {
+        if (parametreRepository.existsById(id)) {
+            parametreRepository.deleteById(id);
+            return true;
+        }
+        return false;
     }
 
 

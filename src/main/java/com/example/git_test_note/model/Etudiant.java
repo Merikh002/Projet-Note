@@ -7,10 +7,19 @@ import lombok.NoArgsConstructor;
 
 @Entity
 @Data
-@NoArgsConstructor
 @AllArgsConstructor
 public class Etudiant {
-    @Id @GeneratedValue
+    @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
+
     private Long id;
     private String nom;
+    
+    public Etudiant(){}
+
+    public Etudiant(String nom) {
+        this.nom = nom;
+    }
+
+   
+
 }
