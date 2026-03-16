@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>Liste des matieres</title>
+    <style>
+        table { border-collapse: collapse; width: 80%; margin: 20px auto; }
+        th, td { border: 1px solid #ccc; padding: 8px; text-align: left; }
+        th { background-color: #eee; }
+    </style>
+</head>
+<body>
+    <h1 style="text-align:center;">Liste des matiere</h1>
+<form id="form-ajout">
+    <input type="text" id="nom-matiere" placeholder="Nom du matiere" required>
+    <button type="submit">Ajouter</button>
+</form>
+
+<table id="matiere-table">
+    <thead>
+    <tr><th>id</th><th>nom</th></tr>
+    </thead>
+    <tbody>
+    <!-- rangées insérées par JS -->
+    </tbody>
+</table>
+
+<script>
+async function loadNotes() {
+    try {
+        const resp = await fetch('/api/matieres');
+        if (!resp.ok) {
+            console.error('loadNotes failed', resp.status);
+            return;
+        }
+        const matiere = await resp.json();
+        console.log('loaded matiere', matiere);
+        const tbody = document.querySelector('#matiere-table tbody');
+        tbody.innerHTML = '';
+        matiere.forEach(e => {
+            const tr = document.createElement('tr');
+            tr.innerHTML = `<td>${e.id}</td>` +
+                           `<td>${e.nom}</td>`+
+                           '<td><button data-id="${e.id}" class="btn-supprimer">Supprimer</button></td>';
+            tbody.appendChild(tr);
+
+            tr.querySelector('.btn-supprimer').addEventListener('click', () => deletematiere(e.id));
+        });
+
+        document.getElementById('form-ajout').addEventListener('submit', e => {
+        e.preventDefault();
+        const nom = document.getElementById('nom-matiere').value.trim();
+        if (nom) {
+            addmatiere(nom);
+            document.getElementById('nom-matiere').value = '';
+        }
+        });
+    } catch (e) {
+        console.error('error loading matiere', e);
+    }
+}
+
+async function addmatiere(nom) {
+    try {
+        const resp = await fetch('/api/matieres', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ nom })
+        });
+        if (resp.ok) {
+            alert('matiere ajouté');
+            loadNotes();
+        } else {
+            alert('Erreur lors de l\'ajout');
+        }
+    } catch (e) {
+        console.error('error adding matiere', e);
+        alert('Erreur lors de l\'ajout');
+    }
+}
+
+async function deletematiere(id) {
+    if (!confirm('Confirmer la suppression ?')) return;
+    try {
+        const resp = await fetch(`/api/matieres/${id}`, { method: 'DELETE' });
+        if (resp.ok) {
+            alert('matiere supprimé');
+            loadNotes();
+        } else {
+            alert('Erreur lors de la suppression');
+        }
+    } catch (e) {
+        console.error('error deleting matiere', e);
+        alert('Erreur lors de la suppression');
+    }
+}
+
+loadNotes();
+
+</script>
+</body>
+</html>

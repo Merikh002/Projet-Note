@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>Liste des notes</title>
+    <style>
+        table { border-collapse: collapse; width: 80%; margin: 20px auto; }
+        th, td { border: 1px solid #ccc; padding: 8px; text-align: left; }
+        th { background-color: #eee; }
+    </style>
+</head>
+<body>
+<h1 style="text-align:center;">Liste des notes</h1>
+
+
+<form id="form-ajout">
+    
+    
+    <select id="etudiant-select" required></select>
+    
+    <select id="correcteur-select" required></select>
+    
+    <select id="matiere-select" required></select>
+
+    <input type="number" id="valeur" placeholder="valeur" required>
+
+    <button type="submit">Ajouter</button>
+
+</form>
+
+<table id="note-table">
+    <thead>
+    <tr><th>id</th><th>etudiant</th><th>correcteur</th><th>matiere</th><th>valeur</th></tr>
+    </thead>
+    <tbody>
+    <!-- rangées insérées par JS -->
+    </tbody>
+</table>
+
+<script>
+async function loadNotes() {
+    try {
+        const resp = await fetch('/api/notes');
+        const etudiants = await fetch('/api/etudiants').then(r => r.json());
+        const correcteurs = await fetch('/api/correcteurs').then(r => r.json());
+        const matieres = await fetch('/api/matieres').then(r => r.json());
+
+        const etudiantSelect = document.getElementById("etudiant-select");
+        const correcteurSelect = document.getElementById("correcteur-select");
+        const matiereSelect = document.getElementById("matiere-select");
+        
+
+        
+        
+        etudiants.forEach(r => {
+            etudiantSelect.innerHTML += `<option value="${r.id}">${r.nom}</option>`;
+        });
+        
+        correcteurs.forEach(o => {
+            correcteurSelect.innerHTML += `<option value="${o.id}">${o.nom}</option>`;
+        });
+        
+        matieres.forEach(m => {
+            matiereSelect.innerHTML += `<option value="${m.id}">${m.nom}</option>`;
+        });
+
+        if (!resp.ok) {
+            console.error('loadNotes failed', resp.status);
+            return;
+        }
+        const note = await resp.json();
+        console.log('loaded note', note);
+        const tbody = document.querySelector('#note-table tbody');
+        tbody.innerHTML = '';
+        note.forEach(e => {
+            const tr = document.createElement('tr');
+            tr.innerHTML = `<td>${e.id}</td>` +
+                           `<td>${e.etudiant.nom}</td>` +
+                           `<td>${e.correcteur.nom}</td>` +
+                           `<td>${e.matiere.nom}</td>` +
+                           `<td>${e.valeur}</td>` +
+                           '<td><button data-id="${e.id}" class="btn-supprimer">Supprimer</button></td>';
+            tbody.appendChild(tr);
+
+            tr.querySelector('.btn-supprimer').addEventListener('click', () => deleteresolution(e.id));
+        });
+
+        document.getElementById('form-ajout').addEventListener('submit', e => {
+        e.preventDefault();
+        const etudiantId = document.getElementById('etudiant-select').value;
+        const correcteurId = document.getElementById('correcteur-select').value;
+        const matiereId = document.getElementById('matiere-select').value;
+        const valeur = document.getElementById('valeur').value;
+
+           addnote(matiereId, etudiantId, correcteurId, valeur);
+        });
+    } catch (e) {
+        console.error('error loading note', e);
+    }
+}
+
+async function addnote(matiereId, etudiantId, correcteurId, valeur) {
+    try {
+        const resp = await fetch('/api/notes', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({  matiere: { id: matiereId },
+                                    etudiant: { id: etudiantId },
+                                    correcteur: { id: correcteurId },
+                                    valeur: valeur })
+        });
+        if (resp.ok) {
+            alert('note ajouté');
+            loadNotes();
+        } else {
+            alert('Erreur lors de l\'ajout');
+        }
+    } catch (e) {
+        console.error('error adding note', e);
+        alert('Erreur lors de l\'ajout');
+    }
+}
+
+async function deleteresolution(id) {
+    if (!confirm('Confirmer la suppression ?')) return;
+    try {
+        const resp = await fetch(`/api/resolutions/${id}`, { method: 'DELETE' });
+        if (resp.ok) {
+            alert('note supprimé');
+            loadNotes();
+        } else {
+            alert('Erreur lors de la suppression');
+        }
+    } catch (e) {
+        console.error('error deleting note', e);
+        alert('Erreur lors de la suppression');
+    }
+}
+
+loadNotes();
+
+</script>
+</body>
+</html>

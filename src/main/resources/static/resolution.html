@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>Liste des élèves</title>
+    <style>
+        table { border-collapse: collapse; width: 80%; margin: 20px auto; }
+        th, td { border: 1px solid #ccc; padding: 8px; text-align: left; }
+        th { background-color: #eee; }
+    </style>
+</head>
+<body>
+    <h1 style="text-align:center;">Liste des resolution</h1>
+<form id="form-ajout">
+    <input type="text" id="nom-resolution" placeholder="libelle" required>
+    <button type="submit">Ajouter</button>
+</form>
+
+<table id="resolution-table">
+    <thead>
+    <tr><th>id</th><th>libelle</th></tr>
+    </thead>
+    <tbody>
+    <!-- rangées insérées par JS -->
+    </tbody>
+</table>
+
+<script>
+async function loadNotes() {
+    try {
+        const resp = await fetch('/api/resolutions');
+        if (!resp.ok) {
+            console.error('loadNotes failed', resp.status);
+            return;
+        }
+        const resolution = await resp.json();
+        console.log('loaded resolution', resolution);
+        const tbody = document.querySelector('#resolution-table tbody');
+        tbody.innerHTML = '';
+        resolution.forEach(e => {
+            const tr = document.createElement('tr');
+            tr.innerHTML = `<td>${e.id}</td>` +
+                           `<td>${e.libelle}</td>`+
+                           '<td><button data-id="${e.id}" class="btn-supprimer">Supprimer</button></td>';
+            tbody.appendChild(tr);
+
+            tr.querySelector('.btn-supprimer').addEventListener('click', () => deleteresolution(e.id));
+        });
+
+        document.getElementById('form-ajout').addEventListener('submit', e => {
+        e.preventDefault();
+        const nom = document.getElementById('nom-resolution').value.trim();
+        if (nom) {
+            addresolution(nom);
+            document.getElementById('nom-resolution').value = '';
+        }
+        });
+    } catch (e) {
+        console.error('error loading resolution', e);
+    }
+}
+
+async function addresolution(libelle) {
+    try {
+        const resp = await fetch('/api/resolutions', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ libelle })
+        });
+        if (resp.ok) {
+            alert('resolution ajouté');
+            loadNotes();
+        } else {
+            alert('Erreur lors de l\'ajout');
+        }
+    } catch (e) {
+        console.error('error adding resolution', e);
+        alert('Erreur lors de l\'ajout');
+    }
+}
+
+async function deleteresolution(id) {
+    if (!confirm('Confirmer la suppression ?')) return;
+    try {
+        const resp = await fetch(`/api/resolutions/${id}`, { method: 'DELETE' });
+        if (resp.ok) {
+            alert('resolution supprimé');
+            loadNotes();
+        } else {
+            alert('Erreur lors de la suppression');
+        }
+    } catch (e) {
+        console.error('error deleting resolution', e);
+        alert('Erreur lors de la suppression');
+    }
+}
+
+loadNotes();
+
+</script>
+</body>
+</html>
