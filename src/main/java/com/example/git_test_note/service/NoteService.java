@@ -1,6 +1,5 @@
 package com.example.git_test_note.service;
 
-import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
@@ -38,27 +37,6 @@ public class NoteService {
         this.parametreRepository = parametreRepository;
         this.etudiantRepository = etudiantRepository;
         this.matiereRepository = matiereRepository;
-    }
-
-    /**
-     * Count how many distinct professors graded a given student for a given subject.
-     */
-    public long countCorrecteurs(Long etudiantId, Long matiereId) {
-        return noteRepository.countDistinctCorrecteurs(etudiantId, matiereId);
-    }
-
-    /**
-     * Calculate the difference between the maximum and minimum note for a student
-     * in a specific subject.
-     */
-    public BigDecimal calculerDifferenceNote(Long etudiantId, Long matiereId) {
-        List<Note> notes = noteRepository.findByEtudiantIdAndMatiereId(etudiantId, matiereId);
-        if (notes.isEmpty()) {
-            return BigDecimal.ZERO;
-        }
-        double min = notes.stream().mapToDouble(Note::getValeur).min().orElse(0);
-        double max = notes.stream().mapToDouble(Note::getValeur).max().orElse(0);
-        return BigDecimal.valueOf(max - min);
     }
 
     /**
