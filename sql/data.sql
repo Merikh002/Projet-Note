@@ -1,20 +1,16 @@
 -- Table etudiant
 INSERT INTO etudiant (nom) VALUES 
-('etudiant1'), 
-('etudiant2');
-('etudiant3');
+('candidat3');
 
 
 -- Table matiere
 INSERT INTO matiere (nom) VALUES 
-('JAVA'),
-('PHP');
+('PYTHON');
 
 -- Table corecteur
 INSERT INTO correcteur (nom) VALUES 
 ('correcteur1'), 
 ('correcteur2');
-('correcteur3');
 
 -- Table resolution
 INSERT INTO resolution (libelle) VALUES 

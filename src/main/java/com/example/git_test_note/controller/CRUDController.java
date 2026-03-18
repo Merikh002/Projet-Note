@@ -221,7 +221,7 @@ public class CRUDController {
     }
 
     @GetMapping("/notes-finales/calc/{etudiantId}/{matiereId}")
-    public double calculerNoteFinale(@PathVariable Long etudiantId, @PathVariable Long matiereId) {
+    public double calculerNoteFinale(@PathVariable("etudiantId") Long etudiantId, @PathVariable("matiereId") Long matiereId) {
         return noteService.calculerEtEnregistrerNoteFinale(etudiantId, matiereId);
     }
 

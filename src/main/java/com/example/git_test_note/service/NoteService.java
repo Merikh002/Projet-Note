@@ -1,6 +1,5 @@
 package com.example.git_test_note.service;
 
-import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
@@ -38,27 +37,6 @@ public class NoteService {
         this.parametreRepository = parametreRepository;
         this.etudiantRepository = etudiantRepository;
         this.matiereRepository = matiereRepository;
-    }
-
-    /**
-     * Count how many distinct professors graded a given student for a given subject.
-     */
-    public long countCorrecteurs(Long etudiantId, Long matiereId) {
-        return noteRepository.countDistinctCorrecteurs(etudiantId, matiereId);
-    }
-
-    /**
-     * Calculate the difference between the maximum and minimum note for a student
-     * in a specific subject.
-     */
-    public BigDecimal calculerDifferenceNote(Long etudiantId, Long matiereId) {
-        List<Note> notes = noteRepository.findByEtudiantIdAndMatiereId(etudiantId, matiereId);
-        if (notes.isEmpty()) {
-            return BigDecimal.ZERO;
-        }
-        double min = notes.stream().mapToDouble(Note::getValeur).min().orElse(0);
-        double max = notes.stream().mapToDouble(Note::getValeur).max().orElse(0);
-        return BigDecimal.valueOf(max - min);
     }
 
     /**
@@ -126,25 +104,30 @@ public class NoteService {
             return defaultResolution();
         }
 
+        List<Parametre> matching = new ArrayList<>();
         for (Parametre p : params) {
             if (p == null || p.getOperation() == null || p.getSeuil() == null) {
                 continue;
             }
             if (matches(p.getOperation().getSigne(), sad, p.getSeuil())) {
-                return p.getResolution();
+                matching.add(p);
             }
         }
 
-        Parametre closest = params.stream()
-                .filter(p -> p != null && p.getSeuil() != null)
-                .min(Comparator.comparingDouble(p -> Math.abs(sad - p.getSeuil())))
-                .orElse(null);
+        Comparator<Parametre> byProximityThenSeuil = Comparator
+                .comparingDouble((Parametre p) -> Math.abs(sad - p.getSeuil()))
+                .thenComparingDouble(Parametre::getSeuil);
 
-        if (closest != null) {
-            return closest.getResolution();
+        if (!matching.isEmpty()) {
+            return matching.stream().min(byProximityThenSeuil).get().getResolution();
         }
 
-        return defaultResolution();
+        // if no rule matches, fallback to nearest seuil (tie => lower seuil)
+        return params.stream()
+                .filter(p -> p != null && p.getSeuil() != null)
+                .min(byProximityThenSeuil)
+                .map(Parametre::getResolution)
+                .orElse(defaultResolution());
     }
 
     private boolean matches(String signe, double value, double seuil) {
