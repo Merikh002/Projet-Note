@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>Liste des Travaux</title>
+    <style>
+        table { border-collapse: collapse; width: 80%; margin: 20px auto; }
+        th, td { border: 1px solid #ccc; padding: 8px; text-align: left; }
+        th { background-color: #eee; }
+    </style>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="nav">
+                <a href="Type-Devis.html">type de devis</a>
+                <a href="Demande.html">Demandes</a>
+                <a href="Client.html">Client</a>
+                <a href="Devis.html">Devis</a>
+                <a href="Travaux.html">Travaux</a>
+                <a href="Statut.html">Statut</a>
+
+                
+    </div>>
+<h1 style="text-align:center;">Liste des Travaux</h1>
+    <h1 style="text-align:center;">3582</h1>
+
+
+
+<form id="form-ajout">
+
+    <select id="demande-select" required></select>
+
+    <select id="statut-select" required></select>
+
+    <button type="submit">Ajouter</button>
+</form>
+
+<table id="Travaux-table">
+    <thead>
+    <tr><th>id</th><th>Demande</th><th>Client</th><th>Statut</th></tr>
+    </thead>
+    <tbody>
+    <!-- rangées insérées par JS -->
+    </tbody>
+</table>
+
+<script type="module">
+    try{
+        const demande  = await fetch('api/demandes').then(r => r.json());
+        const demandeSelect = document.getElementById("demande-select");
+
+        const statut = await fetch('/api/statuts').then(r => r.json());
+        const statutSelect = document.getElementById("statut-select");
+
+        demande.forEach(r => {
+            demandeSelect.innerHTML += `<option value="${r.id}">${r.id}</option>`
+        })
+
+        statut.forEach(r => {
+            statutSelect.innerHTML += `<option value="${r.id}">${r.libelle}</option>`
+        })
+
+    } catch(e){
+        console.error('error loading clients', e);
+    }
+</script>
+
+<script>
+
+async function loadNotes() {
+    try {
+        const resp = await fetch('/api/travaux');
+        if (!resp.ok) {
+            console.error('load Travaux failed', resp.status);
+            return;
+        }
+
+        const Travaux = await resp.json();
+
+        console.log('loaded Travaux', Travaux);
+
+        const tbody = document.querySelector('#Travaux-table tbody');
+        tbody.innerHTML = '';
+        Travaux.forEach(e => {
+            const tr = document.createElement('tr');
+            tr.innerHTML = `<td>${e.id}</td>` +
+                           `<td>${e.demande.id}</td>` +
+                           `<td>${e.demande.client.nom}</td>` +
+                           `<td>${e.statut.libelle}</td>` +
+
+                           `<td><button data-id="${e.id}" class="btn-supprimer">Supprimer</button></td>`;
+            tbody.appendChild(tr);
+
+            tr.querySelector('.btn-supprimer').addEventListener('click', () => deleteresolution(e.id));
+        });
+
+    } catch (e) {
+        console.error('error loading Travaux', e);
+    }
+}
+
+document.getElementById('form-ajout').addEventListener('submit', e => {
+        e.preventDefault();
+        const demandeId = document.getElementById('demande-select').value;
+        const statutId = document.getElementById('statut-select').value;
+
+           addTravaux(demandeId, statutId);
+});
+
+async function addTravaux(demandeId, statutId) {
+    try {
+        const resp = await fetch('/api/travaux', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ demande: {id : demandeId},
+                                   statut: {id : statutId} }  
+            )
+        });
+        if (resp.ok) {
+            alert('Travaux ajouté');
+            loadNotes();
+        } else {
+            alert('Erreur lors de l\'ajout');
+        }
+    } catch (e) {
+        console.error('error adding Travaux', e);
+        alert('Erreur lors de l\'ajout');
+    }
+}
+
+async function deleteresolution(id) {
+    if (!confirm('Confirmer la suppression ?')) return;
+    try {
+        const resp = await fetch(`/api/travaux/${id}`, { method: 'DELETE' });
+        if (resp.ok) {
+            alert('Travaux supprimé');
+            loadNotes();
+        } else {
+            alert('Erreur lors de la suppression');
+        }
+    } catch (e) {
+        console.error('error deleting Travaux', e);
+        alert('Erreur lors de la suppression');
+    }
+}
+
+loadNotes();
+
+</script>
+</body>
+</html>

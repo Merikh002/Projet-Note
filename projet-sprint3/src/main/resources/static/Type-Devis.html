@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>Liste des typeDevis</title>
+    <style>
+        table { border-collapse: collapse; width: 80%; margin: 20px auto; }
+        th, td { border: 1px solid #ccc; padding: 8px; text-align: left; }
+        th { background-color: #eee; }
+    </style>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="nav">
+                <a href="Type-Devis.html">type de devis</a>
+                <a href="Demande.html">Demandes</a>
+                <a href="Client.html">Client</a>
+                <a href="Devis.html">Devis</a>
+                <a href="Travaux.html">Travaux</a>
+                <a href="Statut.html">Statut</a>
+                <!-- <a href="note.html">Notes</a> -->
+                
+    </div>>
+<h1 style="text-align:center;">Liste des Type de Devis</h1>
+    <h1 style="text-align:center;">3582</h1>
+
+
+
+<form id="form-ajout">
+    <input type="text" id="libelle" placeholder="libelle" required>
+
+    <button type="submit">Ajouter</button>
+</form>
+
+<table id="Statut-table">
+    <thead>
+    <tr><th>id</th><th>libelle</th></tr>
+    </thead>
+    <tbody>
+    <!-- rangées insérées par JS -->
+    </tbody>
+</table>
+
+<script>
+async function loadNotes() {
+    try {
+        const resp = await fetch('/api/typeDevis');
+        if (!resp.ok) {
+            console.error('loadNotes failed', resp.status);
+            return;
+        }
+
+        const TypeDevis = await resp.json();
+        console.log('loaded TypeDevis', TypeDevis);
+        const tbody = document.querySelector('#Statut-table tbody');
+        tbody.innerHTML = '';
+        TypeDevis.forEach(e => {
+            const tr = document.createElement('tr');
+            tr.innerHTML = `<td>${e.id}</td>` +
+                           `<td>${e.libelle}</td>` +
+                           `<td><button data-id="${e.id}" class="btn-supprimer">Supprimer</button></td>`;
+            tbody.appendChild(tr);
+
+            tr.querySelector('.btn-supprimer').addEventListener('click', () => deleteresolution(e.id));
+        });
+
+        
+    } catch (e) {
+        console.error('error loading TypeDevis', e);
+    }
+}
+
+document.getElementById('form-ajout').addEventListener('submit', e => {
+        e.preventDefault();
+            const libelle = document.getElementById('libelle').value;
+
+           addTypeDevis(libelle);
+});
+
+async function addTypeDevis(libelle) {
+    try {
+        const resp = await fetch('/api/typeDevis', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ libelle: libelle })
+        });
+        if (resp.ok) {
+            alert('Statut ajouté');
+            loadNotes();
+        } else {
+            alert('Erreur lors de l\'ajout');
+        }
+    } catch (e) {
+        console.error('error adding TypeDevis', e);
+        alert('Erreur lors de l\'ajout');
+    }
+}
+
+async function deleteresolution(id) {
+    if (!confirm('Confirmer la suppression ?')) return;
+    try {
+        const resp = await fetch(`/api/typeDevis/${id}`, { method: 'DELETE' });
+        if (resp.ok) {
+            alert('TypeDevis supprimé');
+            loadNotes();
+        } else {
+            alert('Erreur lors de la suppression');
+        }
+    } catch (e) {
+        console.error('error deleting TypeDevis', e);
+        alert('Erreur lors de la suppression');
+    }
+}
+
+loadNotes();
+
+</script>
+</body>
+</html>
