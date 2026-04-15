@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>Liste des élèves</title>
+    <style>
+        table { border-collapse: collapse; width: 80%; margin: 20px auto; }
+        th, td { border: 1px solid #ccc; padding: 8px; text-align: left; }
+        th { background-color: #eee; }
+    </style>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="nav">
+                <a href="Type-Devis.html">type de devis</a>
+                <a href="Demande.html">Demandes</a>
+                <a href="Client.html">Client</a>
+                <a href="Devis.html">Devis</a>
+                <a href="Travaux.html">Travaux</a>
+                <a href="Statut.html">Statut</a>
+                
+    </div>
+    <h1 style="text-align:center;">Liste des demande</h1>
+    <h1 style="text-align:center;">3582</h1>
+
+<form id="form-ajout">
+    <input type="date" id="date-demande" placeholder="date de demande" required>
+    
+    <input type="text" id="description" placeholder="description" required>
+   
+    <input type="text" id="lieu" placeholder="lieu" required>
+
+    <select id="client-select" required></select>
+
+    <button type="submit">Ajouter</button>
+</form>
+
+<table id="demandes-table">
+    <thead>
+    <tr><th>id</th><th>dateDemande</th><th>description</th><th>lieu</th><th>client</th></tr>
+    </thead>
+    <tbody>
+    <!-- rangées insérées par JS -->
+    </tbody>
+</table>
+
+<script type="module">
+    try {
+        const Client = await fetch('/api/clients').then(r => r.json());
+
+        const clientSelect = document.getElementById("client-select");
+
+        Client.forEach(r => {
+            clientSelect.innerHTML += `<option value="${r.id}">${r.nom}</option>`;
+        });
+    } catch (e) {
+        console.error('error loading clients', e);
+    }
+</script>
+
+<script>
+async function loadNotes() {
+    try {
+        const resp = await fetch('/api/demandes');
+        
+
+        if (!resp.ok) {
+            console.error('loadDemande failed', resp.status);
+            return;
+        }
+
+        const demandes = await resp.json();
+        console.log('loaded demandes', demandes);
+        const tbody = document.querySelector('#demandes-table tbody');
+        tbody.innerHTML = '';
+        demandes.forEach(e => {
+            const tr = document.createElement('tr');
+            tr.innerHTML = `<td>${e.id}</td>` +
+                           `<td>${e.dateDemande}</td>`+
+                           `<td>${e.description}</td>`+
+                           `<td>${e.lieu}</td>`+
+                           `<td>${e.client.nom}</td>`+
+                           '<td><button data-id="${e.id}" class="btn-supprimer">Supprimer</button></td>';
+            tbody.appendChild(tr);
+
+            tr.querySelector('.btn-supprimer').addEventListener('click', () => deleteDemande(e.id));
+        });
+
+        
+    } catch (e) {
+        console.error('error loading demandes', e);
+    }
+
+}
+    document.getElementById('form-ajout').addEventListener('submit', e => {
+        e.preventDefault();
+        const dateDemande = document.getElementById('date-demande').value;
+        const description = document.getElementById('description').value;
+        const lieu = document.getElementById('lieu').value;
+        const clientId = document.getElementById('client-select').value;
+        
+        addDemande(dateDemande, description, lieu, clientId);
+        
+    });
+
+async function addDemande(dateDemande, description, lieu, clientId) {
+    try {
+        const resp = await fetch('/api/demandes', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ dateDemande : dateDemande,
+                                   description : description,
+                                   lieu : lieu,
+                                   client : {id : clientId} })
+        });
+
+
+        const demandeListe = await fetch('/api/demandes').then(r => r.json());
+        const lastDemande = demandeListe.reduce((p, c) => (p.id > c.id ? p : c), demandeListe[0]);
+        const nouveauDemandeId = lastDemande.id;
+
+        const statutResp = await fetch('/api/statutDemande', {
+                method : 'POST',
+                headers : {'Content-Type': 'application/json'},
+                body: JSON.stringify({
+                    demande : {id : Number(nouveauDemandeId)},
+                    statut: {id: Number(1)},
+                    date : dateDemande
+                })
+        });
+
+        if (resp.ok) {
+            alert('Demande ajouté');
+            loadNotes();
+        } else {
+            alert('Erreur lors de l\'ajout');
+        }
+    } catch (e) {
+        console.error('error adding etudiant', e);
+        alert('Erreur lors de l\'ajout');
+    }
+}
+
+async function deleteDemande(id) {
+    if (!confirm('Confirmer la suppression ?')) return;
+    try {
+        const resp = await fetch(`/api/demandes/${id}`, { method: 'DELETE' });
+        if (resp.ok) {
+            alert('Demande supprimé');
+            loadNotes();
+        } else {
+            alert('Erreur lors de la suppression');
+        }
+    } catch (e) {
+        console.error('error deleting etudiant', e);
+        alert('Erreur lors de la suppression');
+    }
+}
+
+loadNotes();
+
+</script>
+</body>
+</html>

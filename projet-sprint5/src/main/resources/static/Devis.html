@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>Liste des Devis</title>
+    <style>
+        table { border-collapse: collapse; width: 80%; margin: 20px auto; }
+        th, td { border: 1px solid #ccc; padding: 8px; text-align: left; }
+        th { background-color: #eee; }
+    </style>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="nav">
+                <a href="Type-Devis.html">type de devis</a>
+                <a href="Demande.html">Demandes</a>
+                <a href="Client.html">Client</a>
+                <a href="Devis.html">Devis</a>
+                <a href="Travaux.html">Travaux</a>
+                <a href="Statut.html">Statut</a>
+
+                
+    </div>>
+<h1 style="text-align:center;">Liste des Devis</h1>
+    <h1 style="text-align:center;">3582</h1>
+
+
+
+<form id="form-ajout">
+
+    <select id="demande-select" required></select>
+
+    <select id="type-devis-select" required></select>
+
+    <select id="statut-select" required></select>
+
+    <input type="date" name="date-devis" id="date-devis" required>
+
+    <button type="submit">Ajouter</button>
+</form>
+
+<table id="Devis-table">
+    <thead>
+    <tr><th>id</th><th>Demande</th><th>Client</th><th>Type de devis</th><th>Statut</th><th>Date de devis</th></tr>
+    </thead>
+    <tbody>
+    <!-- rangées insérées par JS -->
+    </tbody>
+</table>
+
+<script type="module">
+    try{
+        const demande  = await fetch('api/demandes').then(r => r.json());
+        const demandeSelect = document.getElementById("demande-select");
+
+        const typeDevis = await fetch('/api/typeDevis').then(r => r.json());
+        const typeDevisSelect = document.getElementById("type-devis-select");
+
+        const statut = await fetch('/api/statuts').then(r => r.json());
+        const statutSelect = document.getElementById("statut-select");
+
+        demande.forEach(r => {
+            demandeSelect.innerHTML += `<option value="${r.id}">${r.id}</option>`
+        })
+
+        typeDevis.forEach(r => {
+            typeDevisSelect.innerHTML += `<option value="${r.id}">${r.libelle}</option>`
+        })
+
+        statut.forEach(r => {
+            statutSelect.innerHTML += `<option value="${r.id}">${r.libelle}</option>`
+        })
+
+    } catch(e){
+        console.error('error loading clients', e);
+    }
+</script>
+
+<script>
+
+async function loadNotes() {
+    try {
+        const resp = await fetch('/api/devis');
+        if (!resp.ok) {
+            console.error('load Devis failed', resp.status);
+            return;
+        }
+
+        const Devis = await resp.json();
+
+        console.log('loaded Devis', Devis);
+
+        const tbody = document.querySelector('#Devis-table tbody');
+        tbody.innerHTML = '';
+        Devis.forEach(e => {
+            const tr = document.createElement('tr');
+            tr.innerHTML = `<td>${e.id}</td>` +
+                           `<td>${e.demande.id}</td>` +
+                           `<td>${e.demande.client.nom}</td>` +
+                           `<td>${e.typeDevis.libelle}</td>` +
+                           `<td>${e.statut.libelle}</td>` +
+                           `<td>${e.dateDevis}</td>` +
+
+                           `<td><button data-id="${e.id}" class="btn-supprimer">Supprimer</button></td>`;
+            tbody.appendChild(tr);
+
+            
+
+            tr.querySelector('.btn-supprimer').addEventListener('click', () => deleteresolution(e.id));
+        });
+
+    } catch (e) {
+        console.error('error loading Devis', e);
+    }
+}
+
+document.getElementById('form-ajout').addEventListener('submit', e => {
+        e.preventDefault();
+        const demandeId = document.getElementById('demande-select').value;
+        const statutId = document.getElementById('statut-select').value;
+        const typeDevisId = document.getElementById('type-devis-select').value;
+        const date = document.getElementById('date-devis').value;
+
+           addDevis(demandeId, statutId, typeDevisId, date);
+});
+
+async function addDevis(demandeId, statutId, typeDevisId, date) {
+    try {
+        const resp = await fetch('/api/devis', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ demande: {id : demandeId},
+                                   statut: {id : statutId},
+                                   typeDevis: {id : typeDevisId},
+                                   dateDevis: date }  
+            )
+        });
+        if (resp.ok) {
+            alert('Devis ajouté');
+            loadNotes();
+        } else {
+            alert('Erreur lors de l\'ajout');
+        }
+    } catch (e) {
+        console.error('error adding Devis', e);
+        alert('Erreur lors de l\'ajout');
+    }
+}
+
+async function deleteresolution(id) {
+    if (!confirm('Confirmer la suppression ?')) return;
+    try {
+        const resp = await fetch(`/api/devis/${id}`, { method: 'DELETE' });
+        if (resp.ok) {
+            alert('Devis supprimé');
+            loadNotes();
+        } else {
+            alert('Erreur lors de la suppression');
+        }
+    } catch (e) {
+        console.error('error deleting Devis', e);
+        alert('Erreur lors de la suppression');
+    }
+}
+
+loadNotes();
+
+</script>
+</body>
+</html>

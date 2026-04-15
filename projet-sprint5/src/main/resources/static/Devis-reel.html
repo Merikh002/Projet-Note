@@ -1,0 +1,388 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Création de Devis</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <nav class="nav">
+            <a href="Type-Devis.html">Type de devis</a>
+            <a href="Demande.html">Demandes</a>
+            <a href="Client.html">Client</a>
+            <a href="Devis.html">Devis</a>
+            <a href="Travaux.html">Travaux</a>
+            <a href="Statut.html">Statut</a>
+        </nav>
+
+        <h1>Création de Devis</h1>
+
+        <section class="form-section">
+            <h2>Détails du devis (lignes)</h2>
+            <div class="form-row">
+                <button type="button" id="add-detail-btn">+ Ajouter un détail de devis</button>
+            </div>
+            <table id="detail-items-table">
+                <thead>
+                    <tr>
+                        <th>Libellé</th>
+                        <th>Quantité</th>
+                        <th>Montant</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody></tbody>
+            </table>
+            <div id="message-reduction"></div>
+            <div class="mb-3">
+                        <label class="form-label">Prix total :</label>
+                        <!-- <input type="text" id="prixTotalAffiche" class="form-control" readonly> -->
+                        <div id="prix-total" class="form-row" style="display:none;"></div>
+                        <input type="hidden" id="totalPrix" name="totalPrix" value="0">
+            </div>
+
+            
+        </section>
+
+        <form id="form-ajout" class="form-section">
+            <h2>Informations du devis</h2>
+            
+            <div class="form-row">
+                <label for="demande-select">Demande *</label>
+                <select id="demande-select" required>
+                    <option value="">-- sélectionnez --</option>
+                </select>
+            </div>
+
+            <div id="demande-details" class="form-row" style="display:none;">
+                <!-- détails de la demande insérés en JS -->
+            </div>
+
+            <div class="form-row">
+                <label for="type-devis-select">Type de devis *</label>
+                <select id="type-devis-select" required>
+                    <option value="">-- sélectionnez --</option>
+                </select>
+
+                <label for="date-devis">Date de devis *</label>
+                <input type="date" id="date-devis" required>
+            </div>
+
+            <div class="form-row">
+                <button type="submit">Créer le devis</button>
+            </div>
+        </form>
+
+        <section class="form-section">
+            <h2>Liste des Devis</h2>
+            <table id="Devis-table">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Demande</th>
+                        <th>Client</th>
+                        <th>Type</th>
+                        <th>Statut</th>
+                        <th>Date</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody></tbody>
+            </table>
+        </section>
+    </div>
+
+<script>
+    let detailItems = [];
+
+    const demandeSelect = document.getElementById('demande-select');
+    const typeDevisSelect = document.getElementById('type-devis-select');
+    const dateDevisInput = document.getElementById('date-devis');
+    const demandeDetailsDiv = document.getElementById('demande-details');
+    const totalPrice = document.getElementById('prix-total');
+    let totalPrixHidden = document.getElementById('totalPrix');
+
+
+    
+    async function initialiserPage() {
+        try {
+            const [demandes, types, statuts] = await Promise.all([
+                fetch('/api/demandes').then(r => r.json()),
+                fetch('/api/typeDevis').then(r => r.json()),
+                fetch('/api/statuts').then(r => r.json())
+            ]);
+
+            demandes.forEach(d => {
+                const opt = document.createElement('option');
+                opt.value = d.id;
+                opt.textContent = d.id + ' - ' + (d.description || 'sans description');
+                demandeSelect.appendChild(opt);
+            });
+
+            types.forEach(t => {
+                const opt = document.createElement('option');
+                opt.value = t.id;
+                opt.textContent = t.libelle;
+                typeDevisSelect.appendChild(opt);
+            });
+
+            
+
+        } catch (e) {
+            console.error('Erreur chargement init', e);
+            alert('Erreur de chargement des listes');
+        }
+
+        chargerDevis();
+    }
+
+    function afficherPrixTotal(prixTotal) {
+        if (!prixTotal) {
+            totalPrice.style.display = 'none';
+            totalPrice.innerHTML = '';
+            return;
+        }
+
+        totalPrice.style.display = 'block';
+        totalPrice.innerHTML = '<div>' + prixTotal + 'Ar' + '</div>';
+    }
+    
+    function calculPrixTotal(){
+            let totalprix = 0;
+            let reductionaApplique = false;
+        
+            for (const d of detailItems) {
+                let quantite = Number(d.quantite) || 0;
+                let montant = Number(d.montant) || 0;
+
+                if(d.montant > 1000000){
+                    montant *= (1 - 0.10);
+                    reductionaApplique = true; 
+                }
+                totalprix += quantite * montant;
+            }
+
+            totalPrixHidden.value = totalprix > 0 ? totalprix.toFixed(2) : '0';
+            afficherPrixTotal(totalprix);
+
+            const messageReduction = document.getElementById("message-reduction");
+            messageReduction.textContent = reductionaApplique ? "reduction de 10% apllique" : ""; 
+
+    }
+
+    async function afficherDemande(id) {
+        if (!id) {
+            demandeDetailsDiv.style.display = 'none';
+            demandeDetailsDiv.innerHTML = '';
+            return;
+        }
+
+        try {
+            const info = await fetch('/api/demandes/' + id).then(r => r.json());
+            demandeDetailsDiv.style.display = 'block';
+            demandeDetailsDiv.innerHTML = '<strong>Détails de la demande #' + info.id + '</strong>' +
+                '<div>Date: ' + (info.dateDemande ? new Date(info.dateDemande).toLocaleDateString() : 'N/A') + '</div>' +
+                '<div>Description: ' + (info.description || '---') + '</div>' +
+                '<div>Lieu: ' + (info.lieu || '---') + '</div>' +
+                '<div>Client: ' + (info.client ? info.client.nom : '---') + '</div>';
+
+        } catch (e) {
+            console.error('Erreur lecture demande', e);
+            demandeDetailsDiv.style.display = 'none';
+        }
+    }
+
+    function afficherLignesDetails() {
+        const tbody = document.querySelector('#detail-items-table tbody');
+        tbody.innerHTML = '';
+
+
+        detailItems.forEach((item, idx) => {
+            const tr = document.createElement('tr');
+            tr.innerHTML =
+                '<td><input type="text" value="' + item.libelle + '" data-index="' + idx + '" data-field="libelle" placeholder="Libellé" required /></td>' +
+                '<td><input type="number" min="1" value="' + item.quantite + '" data-index="' + idx + '" data-field="quantite" required /></td>' +
+                '<td><input type="number" step="0.01" value="' + item.montant + '" data-index="' + idx + '" data-field="montant" required /></td>' +
+                '<td><button type="button" class="small" data-action="remove" data-index="' + idx + '">Supprimer</button></td>';
+            tbody.appendChild(tr);
+        });
+
+        // tbody.innerHTML = '<label> reduction de 10% </label>';        
+
+        tbody.querySelectorAll('input').forEach(input => {
+            input.addEventListener('input', e => {
+                const index = Number(e.target.dataset.index);
+                const field = e.target.dataset.field;
+                detailItems[index][field] = e.target.value;
+
+                if(field === 'quantite' || field === 'montant'){   
+                    calculPrixTotal();
+                }
+            });
+        });
+
+        tbody.querySelectorAll('button[data-action="remove"]').forEach(btn => {
+            btn.addEventListener('click', e => {
+                const index = Number(e.target.dataset.index);
+                detailItems.splice(index, 1);
+                afficherLignesDetails();
+                calculPrixTotal();
+            });
+        });
+    }
+
+    document.getElementById('add-detail-btn').addEventListener('click', () => {
+        detailItems.push({ libelle: '', quantite: 1, montant: 0.0 });
+        afficherLignesDetails();
+        calculPrixTotal();
+    });
+
+    demandeSelect.addEventListener('change', e => afficherDemande(e.target.value));
+
+    document.getElementById('form-ajout').addEventListener('submit', async e => {
+        e.preventDefault();
+
+        const demandeId = demandeSelect.value;
+        const typeDevisId = typeDevisSelect.value;
+        const dateDevis = dateDevisInput.value;
+        let statutId = 1;
+
+        if (!demandeId) return alert('Veuillez sélectionner une demande.');
+        if (!typeDevisId) return alert('Veuillez sélectionner un type de devis.');
+        if (!dateDevis) return alert('Veuillez renseigner la date du devis.');
+        if (detailItems.length === 0) return alert('Veuillez ajouter au moins un détail de devis.');
+
+        const invalidDetail = detailItems.some(i => !i.libelle.trim() || !i.quantite || !i.montant);
+        if (invalidDetail) return alert('Veuillez renseigner tous les champs des détails de devis.');
+
+
+            
+
+        try {
+            if (Number(typeDevisId) == 1){
+                statutId = 2;
+            } else {
+                statutId = 3;
+            }
+
+            const statutResp = await fetch('/api/statutDemande', {
+                method : 'POST',
+                headers : {'Content-Type': 'application/json'},
+                body: JSON.stringify({
+                    demande : {id : Number(demandeId)},
+                    statut: {id: Number(statutId)},
+                    date : dateDevis
+                })
+            });
+            
+            if (!statutResp.ok){
+                alert('devis deja existant');
+                return;
+            }
+
+
+            const createResp = await fetch('/api/devis', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    demande: { id: Number(demandeId) },
+                    typeDevis: { id: Number(typeDevisId) },
+                    dateDevis: dateDevis
+                })
+            });
+
+            if (!createResp.ok) throw new Error('Création devis impossible');
+
+            const devisListe = await fetch('/api/devis').then(r => r.json());
+            const lastDevis = devisListe.reduce((p, c) => (p.id > c.id ? p : c), devisListe[0]);
+            const nouveauDevisId = lastDevis.id;
+
+            for (const d of detailItems) {
+                await fetch('/api/detailDeviss', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        devis: { id: nouveauDevisId },
+                        libelle: d.libelle,
+                        quantite: Number(d.quantite),
+                        montant: Number(d.montant)
+                    })
+                });
+            }
+
+            
+
+            alert('Devis et détails insérés avec succès');
+            detailItems = [];
+            afficherLignesDetails();
+            chargerDevis();
+            
+
+
+        } catch (err) {
+            console.error('Erreur création devis/détails', err);
+            alert('Erreur lors de la création du devis.');
+        }
+    });
+
+    async function chargerDevis() {
+        try {
+            const resp = await fetch('/api/devis');
+            const statut = await fetch('/api/statutDemande');
+
+            
+            if (!resp.ok) { console.error('load Devis failed', resp.status); return; }
+            if (!statut.ok) { console.error('load statut demande failed', resp.status); return; }
+
+            const devisListe = await resp.json();
+            const listeStatut = await statut.json();
+            const tbody = document.querySelector('#Devis-table tbody');
+            tbody.innerHTML = '';
+
+            const statutPardemande = {};
+            
+            listeStatut.forEach((item) => {
+                const cle = item.demande.id + '_' + (item.statut.id - 1);
+                statutPardemande[cle] = item.statut;
+            });
+
+            devisListe.forEach(d => {
+                const tr = document.createElement('tr');
+
+                const demandeId = d.demande ? d.demande.id : null;
+                const typeDevisId = d.typeDevis ? d.typeDevis.id : null;
+                const cle = demandeId + '_' + typeDevisId;
+
+                const StatutReel = cle ? statutPardemande[cle] : null;
+
+                tr.innerHTML =
+                    '<td>' + d.id + '</td>' +
+                    '<td>' + (d.demande ? d.demande.id : '') + '</td>' +
+                    '<td>' + (d.demande && d.demande.client ? d.demande.client.nom : '') + '</td>' +
+                    '<td>' + (d.typeDevis ? d.typeDevis.libelle : '') + '</td>' +
+                    '<td>' + (StatutReel ? StatutReel.libelle : '') + '</td>' +
+                    '<td>' + (d.dateDevis ? new Date(d.dateDevis).toLocaleDateString() : '') + '</td>' +
+                    '<td><button class="small btn-supprimer" data-id="' + d.id + '">Supprimer</button></td>';
+                tbody.appendChild(tr);
+            });
+
+            tbody.querySelectorAll('.btn-supprimer').forEach(btn => {
+                btn.addEventListener('click', async () => {
+                    if (!confirm('Confirmer la suppression ?')) return;
+                    const id = btn.dataset.id;
+                    const rep = await fetch('/api/devis/' + id, { method: 'DELETE' });
+                    if (rep.ok) chargerDevis(); else alert('Erreur suppression');
+                })
+            });
+
+        } catch (e) {
+            console.error('error loading Devis', e);
+        }
+    }
+
+    initialiserPage();
+</script>
+</body>
+</html>
