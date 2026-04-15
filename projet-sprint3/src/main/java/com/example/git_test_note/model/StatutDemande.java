@@ -4,6 +4,7 @@ import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import java.util.Date;
 
 @Entity
 @Data
@@ -13,6 +14,16 @@ public class StatutDemande {
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     
-    private String libelle;
+    @ManyToOne
+    @JoinColumn(name = "demande_id")
+    private Demande demande;
+
+    @ManyToOne
+    @JoinColumn(name = "statut_id")
+    private Statut statut;
+
+    private Date date;
+
+   
 
 }

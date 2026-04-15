@@ -104,6 +104,8 @@ async function loadNotes() {
                            `<td><button data-id="${e.id}" class="btn-supprimer">Supprimer</button></td>`;
             tbody.appendChild(tr);
 
+            
+
             tr.querySelector('.btn-supprimer').addEventListener('click', () => deleteresolution(e.id));
         });
 

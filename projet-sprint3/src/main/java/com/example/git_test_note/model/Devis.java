@@ -5,11 +5,16 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.ManyToOne;
+import jakarta.persistence.OneToMany;
 import jakarta.persistence.JoinColumn;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import java.util.List;
+
 import java.util.Date;
+
+import jakarta.persistence.CascadeType;
 
 @Entity
 @Data
@@ -28,9 +33,9 @@ public class Devis {
     @JoinColumn(name = "type_devis_id")
     private TypeDevis typeDevis;
 
-    @ManyToOne
-    @JoinColumn(name = "statut_id")
-    private Statut statut;
-
     private Date dateDevis;
+
+    
+
+    
 }
