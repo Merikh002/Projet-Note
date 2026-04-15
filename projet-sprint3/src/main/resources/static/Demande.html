@@ -113,6 +113,22 @@ async function addDemande(dateDemande, description, lieu, clientId) {
                                    lieu : lieu,
                                    client : {id : clientId} })
         });
+
+
+        const demandeListe = await fetch('/api/demandes').then(r => r.json());
+        const lastDemande = demandeListe.reduce((p, c) => (p.id > c.id ? p : c), demandeListe[0]);
+        const nouveauDemandeId = lastDemande.id;
+
+        const statutResp = await fetch('/api/statutDemande', {
+                method : 'POST',
+                headers : {'Content-Type': 'application/json'},
+                body: JSON.stringify({
+                    demande : {id : Number(nouveauDemandeId)},
+                    statut: {id: Number(1)},
+                    date : dateDemande
+                })
+        });
+
         if (resp.ok) {
             alert('Demande ajouté');
             loadNotes();

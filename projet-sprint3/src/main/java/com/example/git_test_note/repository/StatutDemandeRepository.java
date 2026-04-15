@@ -5,5 +5,6 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import java.util.List;
 
 public interface StatutDemandeRepository extends JpaRepository<StatutDemande, Long> {
+    boolean existsByDemande_idAndStatut_id(long demandeId, long statutId);
 }
 

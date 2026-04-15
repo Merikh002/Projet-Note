@@ -2,6 +2,7 @@ package com.example.git_test_note.service;
 
 import java.util.List;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.example.git_test_note.model.Client;
 import com.example.git_test_note.model.Demande;
@@ -111,8 +112,10 @@ public class CRUDService {
         return DevisRepository.findById(id).orElse(null);
     }
 
+    @Transactional
     public boolean deleteDevis(Long id) {
         if (DevisRepository.existsById(id)) {
+            DetailDevisRepository.deleteByDevisId(id);
             DevisRepository.deleteById(id);
             return true;
         }
@@ -169,8 +172,12 @@ public class CRUDService {
 
     private final StatutDemandeRepository StatutDemandeRepository;
 
-    public void createStatutDemande(StatutDemande statutDemande) {
-        StatutDemandeRepository.save(statutDemande);
+    public boolean createStatutDemande(StatutDemande statutDemande) {
+        if(!StatutDemandeRepository.existsByDemande_idAndStatut_id(statutDemande.getDemande().getId(), statutDemande.getStatut().getId())){
+            StatutDemandeRepository.save(statutDemande);
+            return true;
+        }
+        return false;
     }
 
     public List<StatutDemande> getAllStatutDemande() {

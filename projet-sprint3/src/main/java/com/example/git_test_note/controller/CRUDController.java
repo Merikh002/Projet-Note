@@ -175,8 +175,14 @@ public class CRUDController {
     // ====================
 
     @PostMapping("/statutDemande")
-    public void createStatutDemande(@RequestBody StatutDemande statutDemande) {
-        crudService.createStatutDemande(statutDemande);
+    public ResponseEntity<Void> createStatutDemande(@RequestBody StatutDemande statutDemande) {
+        
+        boolean inserer = crudService.createStatutDemande(statutDemande);
+        if (inserer){
+            return ResponseEntity.noContent().build();
+        } else {
+            return ResponseEntity.status(409).build();
+        }
     }
 
     @GetMapping("/statutDemande")

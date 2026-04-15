@@ -60,6 +60,17 @@ CREATE TABLE travaux (
         FOREIGN KEY (statut_id) REFERENCES statut(id)
 );
 
+CREATE TABLE statut_demande (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    demande_id INT NOT NULL,
+    statut_id INT NOT NULL,
+    date DATETIME NOT NULL,
+    CONSTRAINT fk_statut_demande_demande
+        FOREIGN KEY (demande_id) REFERENCES demande(id),
+    CONSTRAINT fk_statut_demande_statut
+        FOREIGN KEY (statut_id) REFERENCES statut(id)
+);
+
 statut_demande{
     id
     id_demande
