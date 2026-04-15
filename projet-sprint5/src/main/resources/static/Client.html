@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>Liste des élèves</title>
+    <style>
+        table { border-collapse: collapse; width: 80%; margin: 20px auto; }
+        th, td { border: 1px solid #ccc; padding: 8px; text-align: left; }
+        th { background-color: #eee; }
+    </style>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="nav">
+                <a href="Type-Devis.html">type de devis</a>
+                <a href="Demande.html">Demandes</a>
+                <a href="Client.html">Client</a>
+                <a href="Devis.html">Devis</a>
+                <a href="Travaux.html">Travaux</a> 
+                <a href="Statut.html">Statut</a>
+                
+    </div>
+    <h1 style="text-align:center;">Liste des Clients</h1>
+    <h1 style="text-align:center;">3582</h1>
+<form id="form-ajout">
+    <input type="text" id="nom-client" placeholder="Nom du client" required>
+    <input type="text" id="contact-client" placeholder="contact" required>
+    <button type="submit">Ajouter</button>
+</form>
+
+<table id="client-table">
+    <thead>
+    <tr><th>id</th><th>nom</th><th>contact</th></tr>
+    </thead>
+    <tbody>
+    <!-- rangées insérées par JS -->
+    </tbody>
+</table>
+
+
+
+<script>
+async function loadNotes() {
+    try {
+        const resp = await fetch('/api/clients');
+        if (!resp.ok) {
+            console.error('loadNotes failed', resp.status);
+            return;
+        }
+        const client = await resp.json();
+        console.log('loaded client', client);
+        const tbody = document.querySelector('#client-table tbody');
+        tbody.innerHTML = '';
+        client.forEach(e => {
+            const tr = document.createElement('tr');
+            tr.innerHTML = `<td>${e.id}</td>` +
+                           `<td>${e.nom}</td>`+
+                           `<td>${e.contact}</td>`+
+                           '<td><button data-id="${e.id}" class="btn-supprimer">Supprimer</button></td>';
+            tbody.appendChild(tr);
+
+            tr.querySelector('.btn-supprimer').addEventListener('click', () => deleteClient(e.id));
+        });
+
+        
+    } catch (e) {
+        console.error('error loading client', e);
+    }
+
+    
+}
+
+document.getElementById('form-ajout').addEventListener('submit', e => {
+        e.preventDefault();
+        const nom = document.getElementById('nom-client').value.trim();
+        const contact = document.getElementById('contact-client').value;
+        
+            addClient(nom, contact);
+        
+});
+
+async function addClient(nom, contact) {
+    try {
+        const resp = await fetch('/api/clients', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ nom : nom,
+                                   contact : contact})
+        });
+        if (resp.ok) {
+            alert('Client ajouté');
+            loadNotes();
+        } else {
+            alert('Erreur lors de l\'ajout');
+        }
+    } catch (e) {
+        console.error('error adding client', e);
+        alert('Erreur lors de l\'ajout');
+    }
+}
+
+async function deleteClient(id) {
+    if (!confirm('Confirmer la suppression ?')) return;
+    try {
+        const resp = await fetch(`/api/clients/${id}`, { method: 'DELETE' });
+        if (resp.ok) {
+            alert('Client supprimé');
+            loadNotes();
+        } else {
+            alert('Erreur lors de la suppression');
+        }
+    } catch (e) {
+        console.error('error deleting client', e);
+        alert('Erreur lors de la suppression');
+    }
+}
+
+loadNotes();
+
+</script>
+</body>
+</html>
